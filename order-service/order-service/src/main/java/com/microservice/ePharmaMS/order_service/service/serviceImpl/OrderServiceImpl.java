@@ -15,7 +15,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -57,5 +59,45 @@ public class OrderServiceImpl implements OrderService {
         }
         orderRepository.deleteById(id);
     }
+
+    @Override
+    public OrderDTO updateOrderStatus(Long id, String status) {
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + id));
+        order.setStatus(status);
+        Order updatedOrder = orderRepository.save(order);
+        return orderMapper.toDTO(updatedOrder);
+    }
+    @Override
+    public List<OrderDTO> getAllOrders() {
+        return orderRepository.findAll().stream()
+                .map(orderMapper::toDTO)
+                .toList();
+    }
+
+    @Override
+    public List<Order> getAllOrdersSorted() {
+        return orderRepository.findAllOrderByCreatedAtDesc();
+    }
+
+    @Override
+    public List<OrderReportDTO> getOrderReportLast7Days() {
+        LocalDateTime sevenDaysAgo = LocalDateTime.now().minusDays(6).with(LocalTime.MIN);
+        List<OrderReportProjection> projections = orderRepository.getOrderStatsLast7Days(sevenDaysAgo);
+
+        return projections.stream()
+                .map(p -> new OrderReportDTO(p.getDate(), p.getOrderCount(), p.getTotalRevenue()))
+                .toList();
+    }
+    @Override
+    public List<OrderReportDTO> getOrderReportLast30Days() {
+        LocalDateTime sevenDaysAgo = LocalDateTime.now().minusDays(29).with(LocalTime.MIN);
+        List<OrderReportProjection> projections = orderRepository.getOrderStatsLast7Days(sevenDaysAgo);
+
+        return projections.stream()
+                .map(p -> new OrderReportDTO(p.getDate(), p.getOrderCount(), p.getTotalRevenue()))
+                .toList();
+    }
+
 }
 

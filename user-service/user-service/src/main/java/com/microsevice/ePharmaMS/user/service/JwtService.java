@@ -45,7 +45,7 @@ public class JwtService {
                 .claims(claims)
                 .subject(userDetails.getUsername())
                 .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 15)) // 15 phút
+                .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 30)) // 15 phút
                 .signWith(Key) // Thay secretKey bằng khóa bí mật bạn dùng
                 .compact();
     }

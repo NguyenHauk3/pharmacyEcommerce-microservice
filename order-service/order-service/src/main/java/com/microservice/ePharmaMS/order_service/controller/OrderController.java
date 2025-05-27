@@ -1,6 +1,7 @@
 package com.microservice.ePharmaMS.order_service.controller;
 
 import com.microservice.ePharmaMS.order_service.DTO.OrderDTO;
+import com.microservice.ePharmaMS.order_service.DTO.OrderReportDTO;
 import com.microservice.ePharmaMS.order_service.modal.Order;
 import com.microservice.ePharmaMS.order_service.service.OrderService;
 import lombok.RequiredArgsConstructor;
@@ -36,5 +37,22 @@ public class OrderController {
     public ResponseEntity<Void> deleteOrder(@PathVariable Long id) {
         orderService.deleteOrder(id);
         return ResponseEntity.noContent().build();
+    }
+    @PutMapping("/{id}/status")
+    public ResponseEntity<OrderDTO> updateOrderStatus(@PathVariable Long id, @RequestParam String status) {
+        return ResponseEntity.ok(orderService.updateOrderStatus(id, status));
+    }
+    @GetMapping
+    public ResponseEntity<List<Order>> getAllOrders() {
+        List<Order> orders = orderService.getAllOrdersSorted();
+        return ResponseEntity.ok(orders);
+    }
+    @GetMapping("/report/last-7-days")
+    public ResponseEntity<List<OrderReportDTO>> getOrderReportLast7Days() {
+        return ResponseEntity.ok(orderService.getOrderReportLast7Days());
+    }
+    @GetMapping("/report/last-30-days")
+    public ResponseEntity<List<OrderReportDTO>> getOrderReportLast30Days() {
+        return ResponseEntity.ok(orderService.getOrderReportLast30Days());
     }
 }

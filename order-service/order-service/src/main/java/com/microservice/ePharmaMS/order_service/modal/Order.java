@@ -3,6 +3,7 @@ package com.microservice.ePharmaMS.order_service.modal;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -18,7 +19,7 @@ public class Order {
     private Long id;
 
     private Long userId;
-    private Double totalPrice;
+    private BigDecimal totalPrice;
     private String status; // PENDING, PAID, CANCELLED
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)

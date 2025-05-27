@@ -21,8 +21,14 @@ public class VnpayService {
         String orderType = "other";
 
         long amount = 0;
+//        try {
+//            amount = Long.parseLong(paymentRequest.getAmount()) * 100;
+//        } catch (NumberFormatException e) {
+//            throw new IllegalArgumentException("Số tiền không hợp lệ");
+//        }
         try {
-            amount = Long.parseLong(paymentRequest.getAmount()) * 100;
+            double parsedAmount = Double.parseDouble(paymentRequest.getAmount());
+            amount = (long) (parsedAmount * 100);
         } catch (NumberFormatException e) {
             throw new IllegalArgumentException("Số tiền không hợp lệ");
         }
@@ -62,12 +68,21 @@ public class VnpayService {
         StringBuilder query = new StringBuilder();
         for (String fieldName : fieldNames) {
             String fieldValue = vnp_Params.get(fieldName);
+//            if ((fieldValue != null) && (fieldValue.length() > 0)) {
+//                hashData.append(fieldName).append('=')
+//                        .append(URLEncoder.encode(fieldValue, StandardCharsets.US_ASCII.toString()));
+//                query.append(URLEncoder.encode(fieldName, StandardCharsets.US_ASCII.toString()))
+//                        .append('=')
+//                        .append(URLEncoder.encode(fieldValue, StandardCharsets.US_ASCII.toString()));
+//                query.append('&');
+//                hashData.append('&');
+//            }
             if ((fieldValue != null) && (fieldValue.length() > 0)) {
                 hashData.append(fieldName).append('=')
-                        .append(URLEncoder.encode(fieldValue, StandardCharsets.US_ASCII.toString()));
-                query.append(URLEncoder.encode(fieldName, StandardCharsets.US_ASCII.toString()))
+                        .append(URLEncoder.encode(fieldValue, StandardCharsets.UTF_8.name()));
+                query.append(URLEncoder.encode(fieldName, StandardCharsets.UTF_8.name()))
                         .append('=')
-                        .append(URLEncoder.encode(fieldValue, StandardCharsets.US_ASCII.toString()));
+                        .append(URLEncoder.encode(fieldValue, StandardCharsets.UTF_8.name()));
                 query.append('&');
                 hashData.append('&');
             }
@@ -91,7 +106,7 @@ public class VnpayService {
         }
     }
 
-    public ResponseEntity<String> validateVnpayResponse(Map<String, String> params) {
+    public ResponseEntity<String> validateVnpayResponse(Map<String, String> params) throws UnsupportedEncodingException {
         String vnp_SecureHash = params.get("vnp_SecureHash");
         if (vnp_SecureHash == null) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Thiếu chữ ký xác minh!");
@@ -111,7 +126,10 @@ public class VnpayService {
         for (String fieldName : fieldNames) {
             String fieldValue = sortedParams.get(fieldName);
             if (fieldValue != null && fieldValue.length() > 0) {
-                hashData.append(fieldName).append('=').append(fieldValue).append('&');
+                hashData.append(URLEncoder.encode(fieldName, StandardCharsets.UTF_8.name()))
+                        .append('=')
+                        .append(URLEncoder.encode(fieldValue, StandardCharsets.UTF_8.name()))
+                        .append('&');
             }
         }
         if (hashData.length() > 0) {

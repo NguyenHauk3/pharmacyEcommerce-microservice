@@ -35,6 +35,11 @@ public class UsersManagementService {
 
         try {
             User ourUser = new User();
+            if (usersRepo.existsByEmail(registrationRequest.getEmail())) {
+                resp.setStatusCode(400);
+                resp.setMessage("Email đã được sử dụng. Vui lòng chọn email khác.");
+                return resp;
+            }
             ourUser.setEmail(registrationRequest.getEmail());
             ourUser.setAddress(registrationRequest.getAddress());
             ourUser.setRole("USER");

@@ -3,11 +3,18 @@ package com.microsevice.ePharmaMS.user.controller;
 import com.microsevice.ePharmaMS.user.DTO.ReqRes;
 import com.microsevice.ePharmaMS.user.modal.User;
 import com.microsevice.ePharmaMS.user.service.UsersManagementService;
+import com.microsevice.ePharmaMS.user.util.UserExport;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/user")
@@ -44,7 +51,7 @@ public class UserManagementController {
 
         }
 
-        @PutMapping("/admin/update/{userId}")
+            @PutMapping("/administer/update/{userId}")
         public ResponseEntity<ReqRes> updateUser(@PathVariable Long userId, @RequestBody User user){
             return ResponseEntity.ok(usersManagementService.updateUser(userId, user));
         }
@@ -61,4 +68,21 @@ public class UserManagementController {
         public ResponseEntity<ReqRes> deleteUSer(@PathVariable Long userId){
             return ResponseEntity.ok(usersManagementService.deleteUser(userId));
         }
+
+    @GetMapping("/admin/export-to-excel")
+    public void exportToExcel(HttpServletResponse response) throws Exception {
+        response.setContentType("application/octet-stream");
+        DateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss");
+        String currentDateTime = dateFormatter.format(new Date());
+
+        String headerKey = "Content-Disposition";
+        String headerValue = "attachment; filename=nguoidung_" + currentDateTime + ".xlsx";
+        response.setHeader(headerKey, headerValue);
+
+        List<User> listUsers = usersManagementService.listAll();
+
+        UserExport excelExporter = new UserExport(listUsers);
+
+        excelExporter.export(response);
+    }
 }
