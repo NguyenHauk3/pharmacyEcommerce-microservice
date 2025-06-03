@@ -79,8 +79,8 @@ public class InventoryServiceImpl implements InventoryService {
     }
     @Override
     public boolean checkStockAvailability(Long productId, int quantity) {
-        // Logic kiểm tra số lượng trong kho của sản phẩm
-        InventoryDTO inventory = getInventory(productId);  // Giả sử bạn đã có phương thức này
+
+        InventoryDTO inventory = getInventory(productId);
         return inventory != null && inventory.getQuantity() >= quantity;
     }
 
@@ -91,27 +91,27 @@ public class InventoryServiceImpl implements InventoryService {
 
     @Override
     public List<InventoryForecastDTO> calculateForecast() {
-        // Giả sử lấy lịch sử 7 ngày gần nhất
-        LocalDateTime weekAgo = LocalDateTime.now().minusDays(7);
+        // lấy lịch sử 30 ngày gần nhất
+        LocalDateTime weekAgo = LocalDateTime.now().minusDays(30);
 
-//        //Lọc các log xuất kho trong 7 ngày
+//        //Lọc các log xuất kho trong 30 ngày
         Map<Long, List<InventoryLog>> exportLogsByProduct = inventoryLogRepository.findAll().stream()
                 .filter(log -> log.getAction().equalsIgnoreCase("export") && log.getTimestamp().isAfter(weekAgo))
                 .collect(Collectors.groupingBy(InventoryLog::getProductId));
 
         List<InventoryForecastDTO> result = new ArrayList<>();
 
-        //Tính toán số lượng 7 ngày, tính trung bình mỗi này
+        //Tính toán số lượng 30 ngày, tính trung bình mỗi này
         for (Map.Entry<Long, List<InventoryLog>> entry : exportLogsByProduct.entrySet()) {
             Long productId = entry.getKey();
             int totalExported = entry.getValue().stream().mapToInt(log -> Math.abs(log.getQuantityChanged())).sum();
-            double avgExport = totalExported / 7.0;
+            double avgExport = totalExported / 30.0;
 
             //Dự báo số lượng
             Inventory inv = inventoryRepository.findById(productId).orElse(new Inventory(productId, 0));
             int currentQty = inv.getQuantity();
             int daysLeft = avgExport == 0 ? Integer.MAX_VALUE : (int)(currentQty / avgExport);
-            int toRestock = avgExport == 0 ? 0 : (int)Math.ceil(avgExport * 7) - currentQty;
+            int toRestock = avgExport == 0 ? 0 : (int)Math.ceil(avgExport * 30) - currentQty;
             System.out.println("ProductId: " + productId);
             System.out.println("Total exported: " + totalExported);
             System.out.println("Avg export/day: " + avgExport);
@@ -133,7 +133,7 @@ public class InventoryServiceImpl implements InventoryService {
                     Math.max(toRestock, 0)
             ));
         }
-        System.out.println("Tổng số log xuất kho trong 7 ngày: " + exportLogsByProduct.size());
+        System.out.println("Tổng số log xuất kho trong 30 ngày: " + exportLogsByProduct.size());
 
         return result;
     }
